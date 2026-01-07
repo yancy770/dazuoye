@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>白酒香型图鉴</title>
+    <style>
+        /* 导航栏和页脚样式 - 完全复用第一个页面的样式，新增下拉菜单样式 */
+        :root {
+            --scale-factor: 2;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "微软雅黑", "宋体", serif;
+            font-size: 1em;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            /* 保留原有背景图设置，覆盖默认背景 */
+            background-image: url("xiangxingbeijing.png");
+            background-size: cover;
+            background-position: center center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+        }
+        
+        /* 导航栏样式 - 新增下拉菜单相关样式 */
+        .nav-bar {
+            background-color: rgba(180, 0, 0, 0.8);
+            padding: calc(15px * var(--scale-factor)) 0;
+            border-bottom: calc(2px * var(--scale-factor)) solid #d4af37;
+            z-index: 1000; /* 提高层级避免被遮挡 */
+            position: relative; /* 新增：下拉菜单定位所需 */
+        }
+        
+        .nav-menu {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            gap: calc(40px * var(--scale-factor));
+            align-items: center; /* 新增：消除inline-block间隙 */
+        }
+        
+        /* 新增：下拉菜单父项样式 */
+        .nav-item {
+            position: relative; /* 让子菜单相对于父项定位 */
+        }
+        
+        .nav-item > a {
+            color: #f5e8c7;
+            text-decoration: none;
+            font-size: calc(18px * var(--scale-factor));
+            padding: calc(8px * var(--scale-factor)) calc(15px * var(--scale-factor));
+            border-radius: calc(4px * var(--scale-factor));
+            transition: all 0.3s;
+            font-weight: 500;
+            display: inline-block; /* 新增：扩大点击区域 */
+        }
+        
+        .nav-item > a:hover {
+            background-color: #d4af37;
+            color: #8b0000;
+            transform: translateY(calc(-2px * var(--scale-factor)));
+        }
+
+        /* ========== 下拉菜单样式（和其他页面完全一致） ========== */
+        /* 下拉菜单容器 */
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: rgba(180, 0, 0, 0.95);
+            list-style: none;
+            padding: calc(10px * var(--scale-factor)) 0;
+            border-radius: calc(4px * var(--scale-factor));
+            border: calc(1px * var(--scale-factor)) solid #d4af37;
+            min-width: calc(180px * var(--scale-factor));
+            box-shadow: 0 calc(4px * var(--scale-factor)) calc(8px * var(--scale-factor)) rgba(0,0,0,0.2);
+            z-index: 1001; /* 确保下拉菜单在最上层 */
+        }
+
+        /* 下拉菜单项样式 */
+        .dropdown-menu li a {
+            color: #f5e8c7;
+            text-decoration: none;
+            font-size: calc(16px * var(--scale-factor));
+            padding: calc(8px * var(--scale-factor)) calc(20px * var(--scale-factor));
+            display: block;
+            transition: all 0.2s;
+        }
+
+        /* 下拉菜单项hover效果 */
+        .dropdown-menu li a:hover {
+            background-color: #d4af37;
+            color: #8b0000;
+            padding-left: calc(25px * var(--scale-factor));
+        }
+
+        /* 核心：鼠标悬浮显示下拉菜单 */
+        .nav-item:hover .dropdown-menu {
+            display: block;
+            animation: fadeIn 0.2s ease-in-out;
+        }
+        
+        /* 页脚样式 */
+        .footer {
+            background-color: rgba(252, 246, 234, 0.8);
+            color: #f5e8c7;
+            padding: calc(6px * var(--scale-factor)) 0;
+            border-top: calc(1px * var(--scale-factor)) solid #d4af37;
+            margin-top: auto;
+            text-align: center;
+            z-index: 100;
+        }
+        
+        .copyright {
+            font-size: calc(12px * var(--scale-factor));
+            line-height: 1.3;
+            color: black;
+        }
+        
+        .copyright p {
+            margin: calc(2px * var(--scale-factor)) 0;
+        }
+        
+        .copyright .record {
+            font-size: calc(10px * var(--scale-factor));
+            color: black;
+        }
+
+        /* 原有香型图鉴样式 - 调整布局适配导航栏和页脚 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft Yahei", sans-serif;
+        }
+
+        /* 主内容容器 - 替代原有body的布局属性 */
+        .main-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow: auto; /* 允许内容滚动 */
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1620px; 
+            background-color: rgb(239 208 118);
+            border-radius: 27px; 
+            box-shadow: 0 13.5px 54px rgba(0, 0, 0, 0.15); 
+            padding: 54px 40.5px; 
+            display: flex;
+            flex-direction: column;
+            gap: 54px; 
+            transform: scale(1.35); 
+            transform-origin: center center; 
+            margin: 40px 0; /* 增加上下间距 */
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 27px; 
+            justify-items: center;
+        }
+
+        .flavor-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20.25px; 
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .card-img {
+            width: 175.5px; 
+            height: 175.5px; 
+            border-radius: 21.6px; 
+            overflow: hidden;
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 6.75px 20.25px rgba(0, 0, 0, 0.1); 
+            border: 4.05px solid transparent; 
+            background: linear-gradient(45deg, #f8f8f8, #ffffff);
+        }
+
+        .card-img::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(194, 58, 55, 0.1) 0%, 
+                rgba(240, 173, 78, 0.1) 100%);
+            z-index: 1;
+            border-radius: 17.55px; 
+        }
+
+        .card-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+            position: relative;
+            z-index: 0;
+        }
+
+        .card-text {
+            color: white;
+            font-size: 22.95px; 
+            font-weight: 600;
+            letter-spacing: 1.35px; 
+            padding: 8.1px 20.25px; 
+            background: linear-gradient(135deg, rgb(186 1 0), rgba(240, 173, 78, 0.08));
+            border-radius: 13.5px; 
+            transition: all 0.3s ease;
+            text-align: center;
+            min-width: 135px; 
+        }
+
+        .flavor-card:hover .card-img {
+            transform: translateY(-10.8px) scale(1.05); 
+            box-shadow: 0 16.2px 33.75px rgba(194, 58, 55, 0.25); 
+            border-color: rgba(194, 58, 55, 0.3);
+        }
+
+        .flavor-card:hover .card-img img {
+            transform: scale(1.1);
+        }
+
+        .flavor-card:hover .card-text {
+            background: linear-gradient(135deg, rgba(194, 58, 55, 0.15), rgba(240, 173, 78, 0.15));
+            color: #c23a37;
+            transform: translateY(-2.7px); 
+            box-shadow: 0 6.75px 16.2px rgba(194, 58, 55, 0.15); 
+        }
+
+        .flavor-card:hover::after {
+            content: '';
+            position: absolute;
+            width: 202.5px; 
+            height: 202.5px; 
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(194, 58, 55, 0.1) 0%, transparent 70%);
+            z-index: -1;
+            opacity: 0;
+            animation: glow 1s ease-out forwards;
+        }
+
+        @keyframes glow {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+        }
+
+        /* 新增：下拉菜单淡入动画 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 响应式优化 - 新增导航栏移动端适配 */
+        @media (max-width: 1485px) { 
+            .row {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 40.5px; 
+            }
+            .container {
+                gap: 67.5px; 
+            }
+            /* 移动端导航栏适配 */
+            .nav-menu {
+                gap: calc(20px * var(--scale-factor));
+                flex-wrap: wrap;
+            }
+            .nav-item > a {
+                font-size: calc(16px * var(--scale-factor));
+            }
+            /* 移动端下拉菜单适配 */
+            .dropdown-menu {
+                min-width: calc(150px * var(--scale-factor));
+            }
+            .dropdown-menu li a {
+                font-size: calc(14px * var(--scale-factor));
+            }
+        }
+
+        @media (max-width: 1036.8px) { 
+            .card-img {
+                width: 148.5px; 
+                height: 148.5px; 
+            }
+            .card-text {
+                font-size: 20.25px; 
+                min-width: 121.5px; 
+            }
+            .container {
+                padding: 40.5px 27px; 
+            }
+        }
+
+        @media (max-width: 810px) { 
+            .row {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 33.75px; 
+            }
+            .card-img {
+                width: 135px; 
+                height: 135px; 
+            }
+            .card-text {
+                font-size: 18.9px; 
+                min-width: 108px; 
+            }
+        }
+
+        @media (max-width: 540px) { 
+            .row {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20.25px; 
+            }
+            .card-img {
+                width: 114.75px; 
+                height: 114.75px; 
+            }
+            .card-text {
+                font-size: 17.55px; 
+                padding: 6.75px 13.5px; 
+            }
+            /* 移动端导航栏进一步优化 */
+            .nav-menu {
+                gap: calc(10px * var(--scale-factor));
+            }
+            .nav-item {
+                flex: 1 0 auto;
+                text-align: center;
+            }
+            .nav-item a {
+                font-size: calc(14px * var(--scale-factor));
+                padding: calc(5px * var(--scale-factor));
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 - 改造为带下拉菜单的结构 -->
+    <nav class="nav-bar">
+        <ul class="nav-menu">
+            <li class="nav-item"><a href="index.html">首页</a></li>
+            <!-- 改造：古法酿艺变为下拉菜单父项 -->
+            <li class="nav-item">
+                <a href="zhizuo.html">古法酿艺</a>
+                <!-- 下拉菜单子项：包含所有酿造环节 -->
+                <ul class="dropdown-menu">
+                    <li><a href="xuanliao.html">选料</a></li>
+                    <li><a href="zhiqu.html">制曲</a></li>
+                    <li><a href="fajiao.html">发酵</a></li>
+                    <li><a href="zhengliu.html">蒸馏</a></li>
+                    <li><a href="chenniang.html">陈酿</a></li>
+                </ul>
+            </li>
+            <li class="nav-item"><a href="jihe.html">名酿雅集</a></li>
+            <li class="nav-item"><a href="xiangxing.html">香型图鉴</a></li>
+        </ul>
+    </nav>
+    
+    <!-- 香型图鉴主内容区域 -->
+    <div class="main-container">
+        <div class="container">
+            <!-- 上排6个香型 -->
+            <div class="row">
+                <div class="flavor-card">
+                    <div class="card-img">
+                        <img src="images/jxx.jpg" alt="酱香型白酒">
+                    </div>
+                    <div class="card-text">酱香型</div>
+                </div>
+                <div class="flavor-card">
+                    <div class="card-img">
+                        <img src="images/nxx.jpg" alt="浓香型白酒">
+                    </div>
+                    <div class="card-text">浓香型</div>
+                </div>
+                <div class="flavor-card">
+                    <div class="card-img">
+                        <img src="images/qxx.jpg" alt="清香型白酒">
+                    </div>
+                    <div class="card-text">清香型</div>
+                </div>
+                <div class="flavor-card">
+                    <div class="card-img">
+                        <img src="images/mxx.jpg" alt="米香型白酒">
+                    </div>
+                    <div class="card-text">米香型</div>
+                </div>
+                <div class="flavor-card">
+                    <div class="card-img">
+                        <img src="images/fxx.png" alt="凤香型白酒">
+                    </div>
+                    <div class="card-text">凤香型</div>
+                </div>
+                <div class="flavor-card">
+                    <div class="card-img">
+                        <img src="images/dxx.jpg" alt="董香型白酒">
+                    </div>
+                    <div class="card-text">董香型</div>
+                </div>
+            </div>
+            <!-- 下排6个香型 -->
+            <div class="row">
+                <div class="flavor-card">
+                    <div class="card-img">
+                        <img src="images/zxx.jpg" alt="豉香型白酒">
+                    </div>
+                    <div class="card-text">豉香型</div>
+                </div>
+                <div class="flavor-card">
+                    <div class="card-img">
+                        <img src="images/zmxx.jpg" alt="芝麻香型白酒">
+                    </div>
+                    <div class="card-text">芝麻香型</div>
+                </div>
+                <div class="flavor-card">
+                    <div class="card-img">
+                        <img src="images/txx.jpg" alt="特香型白酒">
+                    </div>
+                    <div class="card-text">特香型</div>
+                </div>
+                <div class="flavor-card">
+                    <div class="card-img">
+                        <img src="images/lbgx.jpg" alt="老白干香型白酒">
+                    </div>
+                    <div class="card-text">老白干香型</div>
+                </div>
+                <div class="flavor-card">
+                    <div class="card-img">
+                        <img src="images/jianxiangx.jpg" alt="兼香型白酒">
+                    </div>
+                    <div class="card-text">兼香型</div>
+                </div>
+                <div class="flavor-card">
+                    <div class="card-img">
+                        <img src="images/fyxx.jpg" alt="馥郁香型白酒">
+                    </div>
+                    <div class="card-text">馥郁香型</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 页脚 - 完全复用第一个页面的页脚 -->
+    <footer class="footer">
+        <div class="copyright">
+            <p>&copy; 2026 华夏酒韵文化传承中心 版权所有</p>
+            <p class="record">ICP备案号：京ICP备12345678号 | 公安备案：京公网安备11010502018888号</p>
+        </div>
+    </footer>
+</body>
+</html>
